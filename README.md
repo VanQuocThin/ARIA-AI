@@ -1,6 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ARIA AI — Lễ Tân Thông Minh 24/7
 
-## Getting Started
+SaaS lễ tân AI đa kênh cho khách sạn & nhà hàng Việt Nam.
+Tích hợp Zalo OA, Facebook Messenger, Website Widget. Powered by Anthropic Claude.
+
+**Stack:** Next.js 15 · Supabase · Anthropic Claude · Tailwind CSS · Vercel
+
+---
+
+## Setup (30 phút)
+
+### 1. Cài dependencies
+```bash
+npm install
+```
+
+### 2. Tạo Supabase project
+1. Vào [supabase.com](https://supabase.com) → New project
+2. **SQL Editor** → paste `supabase/migrations/001_initial.sql` → Run
+3. **Settings → API** → Copy URL và anon key
+
+### 3. Lấy Anthropic API key
+Vào [console.anthropic.com](https://console.anthropic.com) → API Keys → Create Key
+
+### 4. Cấu hình `.env.local`
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+ANTHROPIC_API_KEY=sk-ant-...
+ZALO_OA_ACCESS_TOKEN=...
+FACEBOOK_PAGE_ACCESS_TOKEN=...
+FACEBOOK_VERIFY_TOKEN=my-secret
+```
+
+### 5. Chạy local
 
 First, run the development server:
 
