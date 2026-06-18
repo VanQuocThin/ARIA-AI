@@ -1,13 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PROTECTED = ["/dashboard", "/conversations", "/bookings", "/leads", "/channels", "/settings"];
+const PROTECTED = ["/dashboard", "/conversations", "/bookings", "/leads", "/channels", "/settings", "/analytics"];
 const AUTH_ONLY = ["/login", "/register"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip auth check if Supabase env vars not configured yet
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.next({ request });
   }
@@ -47,7 +46,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   } catch {
-    // If auth fails, allow request to continue
+    // allow request through if auth check fails
   }
 
   return response;
