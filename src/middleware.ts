@@ -7,38 +7,47 @@ const AUTH_ONLY = ["/login", "/register"];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  let response = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
-  const isAuthOnly = AUTH_ONLY.some((p) => pathname.startsWith(p));
-
-  if (isProtected && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Skip auth check if Supabase env vars not configured yet
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next({ request });
   }
 
-  if (isAuthOnly && user) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  let response = NextResponse.next({ request });
+
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
+    const isAuthOnly = AUTH_ONLY.some((p) => pathname.startsWith(p));
+
+    if (isProtected && !user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    if (isAuthOnly && user) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  } catch {
+    // If auth fails, allow request to continue
   }
 
   return response;
