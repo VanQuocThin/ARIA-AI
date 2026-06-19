@@ -53,7 +53,7 @@ export function Sidebar({ plan = "free", messagesUsed = 0, messagesQuota = 200 }
   }
 
   return (
-    <aside className="w-60 bg-gray-900 flex flex-col h-screen fixed left-0 top-0">
+    <aside role="complementary" aria-label="Thanh điều hướng" className="w-60 bg-gray-900 flex flex-col h-screen fixed left-0 top-0">
       <div className="p-5 flex items-center gap-2 border-b border-gray-800">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
           <Zap className="w-4 h-4 text-white" />
@@ -64,7 +64,7 @@ export function Sidebar({ plan = "free", messagesUsed = 0, messagesQuota = 200 }
         </span>
       </div>
 
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      <nav role="navigation" aria-label="Menu chính" className="flex-1 p-3 space-y-1 overflow-y-auto">
         {nav.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           return (

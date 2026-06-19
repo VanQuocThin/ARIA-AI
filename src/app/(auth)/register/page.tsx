@@ -20,20 +20,44 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        data: { full_name: form.name, property_name: form.propertyName, property_type: form.propertyType },
-      },
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      setDone(true);
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || supabaseUrl === "undefined" || !supabaseKey || supabaseKey === "undefined") {
+      setError("Lỗi cấu hình: Biến môi trường Supabase chưa được thiết lập trong Vercel. Vui lòng liên hệ quản trị viên.");
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      const supabase = createClient();
+
+      const signUpPromise = supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          data: { full_name: form.name, property_name: form.propertyName, property_type: form.propertyType },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Kết nối Supabase hết thời gian (15s). Kiểm tra env vars trong Vercel.")), 15000)
+      );
+
+      const { error } = await Promise.race([signUpPromise, timeoutPromise]);
+
+      if (error) {
+        setError(`Lỗi: ${error.message} (${error.status ?? "unknown"})`);
+      } else {
+        setDone(true);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`Không thể kết nối: ${msg}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (done) {

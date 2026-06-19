@@ -150,7 +150,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <header role="banner">
+      <nav role="navigation" aria-label="Điều hướng chính" className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
@@ -173,6 +174,10 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
+      </header>
+
+      {/* Main content */}
+      <main id="main-content" role="main">
 
       {/* Hero */}
       <section className="hero-gradient pt-32 pb-20 px-4">
@@ -438,7 +443,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 bg-gray-900">
+      <footer role="contentinfo" className="py-12 px-4 bg-gray-900">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -476,6 +481,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+      </main>
     </div>
   );
 }

@@ -65,16 +65,19 @@ const faq = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white">
-      <nav className="border-b border-gray-100 px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-gray-900">ARIA AI</span>
-        </Link>
-        <Link href="/register"><Button size="sm">Dùng thử miễn phí</Button></Link>
-      </nav>
+      <header role="banner">
+        <nav role="navigation" aria-label="Điều hướng chính" className="border-b border-gray-100 px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-gray-900">ARIA AI</span>
+          </Link>
+          <Link href="/register"><Button size="sm">Dùng thử miễn phí</Button></Link>
+        </nav>
+      </header>
 
+      <main role="main">
       <div className="max-w-5xl mx-auto px-4 py-20">
         <div className="text-center mb-14">
           <Badge variant="secondary" className="mb-4">Bảng giá</Badge>
@@ -128,6 +131,7 @@ export default function PricingPage() {
           </div>
         </div>
       </div>
+      </main>
     </div>
   );
 }

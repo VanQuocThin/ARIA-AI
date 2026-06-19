@@ -6,7 +6,8 @@ export const metadata = { title: "Điều khoản sử dụng — ARIA AI" };
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-white">
-      <nav className="border-b border-gray-100 px-6 h-16 flex items-center">
+      <header role="banner">
+      <nav role="navigation" aria-label="Điều hướng chính" className="border-b border-gray-100 px-6 h-16 flex items-center">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
             <Zap className="w-4 h-4 text-white" />
@@ -14,6 +15,8 @@ export default function TermsPage() {
           <span className="font-bold text-gray-900">ARIA AI</span>
         </Link>
       </nav>
+      </header>
+      <main role="main">
       <div className="max-w-2xl mx-auto px-4 py-16">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Điều khoản sử dụng</h1>
         <p className="text-gray-500 text-sm mb-8">Cập nhật lần cuối: 18/06/2025</p>
@@ -74,6 +77,7 @@ export default function TermsPage() {
           </section>
         </div>
       </div>
+      </main>
     </div>
   );
 }
