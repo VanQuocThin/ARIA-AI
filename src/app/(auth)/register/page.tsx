@@ -46,7 +46,7 @@ export default function RegisterPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Kiểm tra email của bạn!</h2>
           <p className="text-gray-500 mb-6">
             Chúng tôi đã gửi link xác nhận đến <strong>{form.email}</strong>.
-            Click vào link để kích hoạt tài khoản và bắt đầu dùng thử 14 ngày miễn phí.
+            Click vào link để kích hoạt tài khoản và bắt đầu sử dụng ARIA hoàn toàn miễn phí.
           </p>
           <Link href="/login">
             <Button variant="outline">Đến trang đăng nhập</Button>
@@ -67,7 +67,7 @@ export default function RegisterPage() {
             <span className="font-bold text-gray-900 text-xl">ARIA AI</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Đăng ký miễn phí</h1>
-          <p className="text-gray-500 text-sm mt-1">14 ngày dùng thử, không cần thẻ tín dụng</p>
+          <p className="text-gray-500 text-sm mt-1">Miễn phí mãi mãi, không cần thẻ tín dụng</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">

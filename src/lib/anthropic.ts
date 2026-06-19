@@ -1,16 +1,10 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Property, Message } from "@/types";
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-export async function generateReply(
-  property: Property,
-  history: Message[],
-  userMessage: string
-): Promise<string> {
-  const systemPrompt = `Bạn là ${property.ai_persona_name || "ARIA"}, lễ tân AI thông minh của ${property.name}.
+function buildSystemPrompt(property: Property): string {
+  return `Bạn là ${property.ai_persona_name || "ARIA"}, lễ tân AI thông minh của ${property.name}.
 
 Thông tin cơ sở:
 - Tên: ${property.name}
@@ -30,41 +24,74 @@ Hướng dẫn:
 - Không bịa đặt thông tin về giá hoặc dịch vụ chưa được cung cấp
 - Giữ phong cách ${property.type === "hotel" ? "chuyên nghiệp, sang trọng" : property.type === "restaurant" ? "ấm cúng, mến khách" : "thân thiện, chuyên nghiệp"}
 - Trả lời ngắn gọn, dưới 150 từ trừ khi cần thiết`;
+}
 
-  const messages = history
-    .filter((m) => m.role !== "system")
-    .map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }));
-
-  messages.push({ role: "user", content: userMessage });
-
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 512,
-    system: systemPrompt,
-    messages,
+export async function generateReply(
+  property: Property,
+  history: Message[],
+  userMessage: string
+): Promise<string> {
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    systemInstruction: buildSystemPrompt(property),
   });
 
-  return response.content[0].type === "text" ? response.content[0].text : "";
+  const chat = model.startChat({
+    history: history
+      .filter((m) => m.role !== "system")
+      .map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
+  });
+
+  const result = await chat.sendMessage(userMessage);
+  return result.response.text();
+}
+
+export async function generateReplyStream(
+  property: Property,
+  history: Message[],
+  userMessage: string
+): Promise<ReadableStream<Uint8Array>> {
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    systemInstruction: buildSystemPrompt(property),
+  });
+
+  const chat = model.startChat({
+    history: history
+      .filter((m) => m.role !== "system")
+      .map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
+  });
+
+  const result = await chat.sendMessageStream(userMessage);
+  const encoder = new TextEncoder();
+
+  return new ReadableStream({
+    async start(controller) {
+      for await (const chunk of result.stream) {
+        const text = chunk.text();
+        if (text) controller.enqueue(encoder.encode(text));
+      }
+      controller.close();
+    },
+  });
 }
 
 export async function classifyIntent(message: string): Promise<{
   intent: "booking" | "inquiry" | "complaint" | "other";
   urgency: "low" | "medium" | "high";
 }> {
-  const response = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 64,
-    system:
-      'Phân loại tin nhắn khách hàng. Trả về JSON: {"intent": "booking"|"inquiry"|"complaint"|"other", "urgency": "low"|"medium"|"high"}. Chỉ trả về JSON, không giải thích.',
-    messages: [{ role: "user", content: message }],
-  });
-
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const result = await model.generateContent(
+    `Phân loại tin nhắn khách hàng sau. Chỉ trả về JSON, không giải thích:\n{"intent": "booking"|"inquiry"|"complaint"|"other", "urgency": "low"|"medium"|"high"}\n\nTin nhắn: ${message}`
+  );
   try {
-    const text =
-      response.content[0].type === "text" ? response.content[0].text : "{}";
+    const text = result.response.text().replace(/```json|```/g, "").trim();
     return JSON.parse(text);
   } catch {
     return { intent: "other", urgency: "low" };

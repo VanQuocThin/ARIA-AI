@@ -1,9 +1,11 @@
 import {
   MessageCircle, Calendar, Users, TrendingUp,
-  Clock, CheckCircle, AlertCircle, Zap
+  Clock, CheckCircle, AlertCircle, Zap, ArrowUpRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getProperty } from "@/lib/supabase/queries";
+import Link from "next/link";
 
 const stats = [
   { label: "Hội thoại hôm nay", value: "47", change: "+12%", icon: MessageCircle, color: "text-violet-600 bg-violet-100" },
@@ -32,7 +34,56 @@ const statusIcon = {
   escalated: <AlertCircle className="w-4 h-4 text-red-500" />,
 };
 
-export default function DashboardPage() {
+function FreePlanBanner({ used, quota }: { used: number; quota: number }) {
+  const pct = Math.min(100, Math.round((used / quota) * 100));
+  const isWarning = pct >= 80;
+  const isExceeded = used >= quota;
+
+  return (
+    <div className={`mb-6 rounded-xl border p-4 flex items-center justify-between gap-4 ${
+      isExceeded
+        ? "bg-red-50 border-red-200"
+        : isWarning
+        ? "bg-amber-50 border-amber-200"
+        : "bg-violet-50 border-violet-200"
+    }`}>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className={`text-sm font-semibold ${
+            isExceeded ? "text-red-700" : isWarning ? "text-amber-700" : "text-violet-700"
+          }`}>
+            {isExceeded
+              ? "⚠️ Đã dùng hết tin nhắn tháng này"
+              : isWarning
+              ? "⚡ Sắp hết quota tháng này"
+              : "✨ Gói Free"}
+          </span>
+          <span className="text-xs text-gray-500">
+            {used} / {quota} tin nhắn đã dùng
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className={`h-2 rounded-full transition-all ${
+              isExceeded ? "bg-red-500" : isWarning ? "bg-amber-500" : "bg-violet-500"
+            }`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+      <Link
+        href="/pricing"
+        className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+      >
+        Nâng cấp <ArrowUpRight className="w-3.5 h-3.5" />
+      </Link>
+    </div>
+  );
+}
+
+export default async function DashboardPage() {
+  const property = await getProperty();
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -45,6 +96,14 @@ export default function DashboardPage() {
           ARIA đang hoạt động
         </div>
       </div>
+
+      {/* Free plan banner */}
+      {property?.plan === "free" && (
+        <FreePlanBanner
+          used={property.messages_used ?? 0}
+          quota={property.messages_quota ?? 200}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">

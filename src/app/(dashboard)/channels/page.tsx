@@ -1,8 +1,9 @@
-import { CheckCircle, XCircle, ExternalLink, Copy } from "lucide-react";
+import { CheckCircle, XCircle, ExternalLink, Copy, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { getProperty } from "@/lib/supabase/queries";
 
 const channels = [
   {
@@ -11,14 +12,15 @@ const channels = [
     icon: "💬",
     color: "bg-blue-500",
     desc: "Kết nối với Official Account Zalo của bạn. Phục vụ 70M+ người dùng Việt Nam.",
-    connected: true,
-    info: "OA: Khách Sạn Lotus Official",
+    connected: false,
+    info: null,
     steps: [
       "Đăng nhập tại developers.zalo.me",
       "Tạo ứng dụng mới → chọn OA",
       "Copy App ID và App Secret bên dưới",
       "Cấu hình Webhook URL vào app Zalo",
     ],
+    requiresPlan: "starter",
   },
   {
     id: "facebook",
@@ -34,6 +36,7 @@ const channels = [
       "Subscribe page của bạn",
       "Điền Page Access Token bên dưới",
     ],
+    requiresPlan: "starter",
   },
   {
     id: "widget",
@@ -44,6 +47,7 @@ const channels = [
     connected: true,
     info: "Đã nhúng vào: khotsanlotus.vn",
     steps: [],
+    requiresPlan: null,
   },
   {
     id: "phone",
@@ -54,14 +58,24 @@ const channels = [
     connected: false,
     info: null,
     steps: [],
-    enterprise: true,
+    requiresPlan: "enterprise",
   },
 ];
+
+const planOrder: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3 };
 
 const webhookUrl = "https://api.aria.vn/webhook/zalo/prop_abc123";
 const widgetScript = `<script src="https://cdn.aria.vn/widget.js" data-key="prop_abc123"></script>`;
 
-export default function ChannelsPage() {
+export default async function ChannelsPage() {
+  const property = await getProperty();
+  const currentPlan = property?.plan ?? "free";
+
+  function isLocked(requiresPlan: string | null) {
+    if (!requiresPlan) return false;
+    return (planOrder[currentPlan] ?? 0) < (planOrder[requiresPlan] ?? 0);
+  }
+
   return (
     <div>
       <div className="mb-8">
@@ -70,53 +84,78 @@ export default function ChannelsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {channels.map((ch) => (
-          <Card key={ch.id} className={ch.enterprise ? "opacity-70" : ""}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-11 h-11 rounded-xl ${ch.color} flex items-center justify-center text-xl`}>
-                    {ch.icon}
+        {channels.map((ch) => {
+          const locked = isLocked(ch.requiresPlan);
+          const isEnterprise = ch.requiresPlan === "enterprise";
+
+          return (
+            <Card key={ch.id} className={locked || isEnterprise ? "opacity-75" : ""}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-xl ${ch.color} flex items-center justify-center text-xl`}>
+                      {ch.icon}
+                    </div>
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        {ch.name}
+                        {locked && <Lock className="w-3.5 h-3.5 text-gray-400" />}
+                      </CardTitle>
+                      {isEnterprise && (
+                        <span className="text-xs bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full">Enterprise</span>
+                      )}
+                      {locked && !isEnterprise && (
+                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Cần gói Starter+</span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-base">{ch.name}</CardTitle>
-                    {ch.enterprise && <span className="text-xs bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full">Enterprise</span>}
-                  </div>
+                  {!locked && (
+                    ch.connected ? (
+                      <div className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                        <CheckCircle className="w-4 h-4" /> Đã kết nối
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-gray-400 text-sm">
+                        <XCircle className="w-4 h-4" /> Chưa kết nối
+                      </div>
+                    )
+                  )}
                 </div>
-                {ch.connected ? (
-                  <div className="flex items-center gap-1 text-green-600 text-sm font-medium">
-                    <CheckCircle className="w-4 h-4" /> Đã kết nối
+                <CardDescription className="mt-2">{ch.desc}</CardDescription>
+                {ch.info && !locked && <p className="text-xs text-violet-600 font-medium mt-1">{ch.info}</p>}
+              </CardHeader>
+              <CardContent>
+                {locked ? (
+                  <Link href="/pricing">
+                    <Button className="w-full gap-2" variant="outline">
+                      <Lock className="w-3.5 h-3.5" />
+                      Nâng cấp để mở khoá
+                    </Button>
+                  </Link>
+                ) : isEnterprise ? (
+                  <Button className="w-full" variant="outline">Liên hệ để nâng cấp</Button>
+                ) : ch.connected ? (
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="flex-1">Cấu hình</Button>
+                    <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50">Ngắt kết nối</Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 text-gray-400 text-sm">
-                    <XCircle className="w-4 h-4" /> Chưa kết nối
-                  </div>
+                  <Button className="w-full" size="sm">{ch.steps.length > 0 ? "Kết nối ngay" : "Sắp ra mắt"}</Button>
                 )}
-              </div>
-              <CardDescription className="mt-2">{ch.desc}</CardDescription>
-              {ch.info && <p className="text-xs text-violet-600 font-medium mt-1">{ch.info}</p>}
-            </CardHeader>
-            <CardContent>
-              {ch.enterprise ? (
-                <Button className="w-full" variant="outline">Liên hệ để nâng cấp</Button>
-              ) : ch.connected ? (
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="flex-1">Cấu hình</Button>
-                  <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50">Ngắt kết nối</Button>
-                </div>
-              ) : (
-                <Button className="w-full" size="sm">{ch.steps.length > 0 ? "Kết nối ngay" : "Sắp ra mắt"}</Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Webhook & Widget config */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className={isLocked("starter") ? "opacity-60 pointer-events-none" : ""}>
           <CardHeader>
-            <CardTitle className="text-base">Zalo Webhook URL</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              Zalo Webhook URL
+              {isLocked("starter") && <Lock className="w-3.5 h-3.5 text-gray-400" />}
+            </CardTitle>
             <CardDescription>Dán URL này vào cài đặt ứng dụng Zalo OA của bạn</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">

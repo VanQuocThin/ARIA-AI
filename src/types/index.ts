@@ -15,6 +15,10 @@ export interface Property {
   auto_reply: boolean;
   zalo_oa_id?: string;
   facebook_page_id?: string;
+  plan: "free" | "starter" | "pro" | "enterprise";
+  messages_used: number;
+  messages_quota: number;
+  messages_reset_at: string;
   created_at: string;
 }
 

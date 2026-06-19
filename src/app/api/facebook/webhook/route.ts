@@ -41,6 +41,10 @@ export async function POST(req: NextRequest) {
           working_hours_end: "22:00",
           auto_reply: true,
           user_id: "",
+          plan: "free" as const,
+          messages_used: 0,
+          messages_quota: 200,
+          messages_reset_at: new Date().toISOString(),
           created_at: new Date().toISOString(),
         };
 
