@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="text-center">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center mx-auto mb-6">
           <Zap className="w-8 h-8 text-white" />
@@ -17,6 +17,6 @@ export default function NotFound() {
           <Link href="/dashboard"><Button>Vào Dashboard</Button></Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

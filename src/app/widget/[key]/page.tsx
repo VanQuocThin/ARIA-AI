@@ -87,16 +87,16 @@ export default function WidgetPage({ params }: { params: Promise<{ key: string }
 
   if (!property) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-50">
+      <main className="w-full h-full flex items-center justify-center bg-gray-50">
         <div className="w-6 h-6 rounded-full border-2 border-violet-600 border-t-transparent animate-spin" />
-      </div>
+      </main>
     );
   }
 
   return (
     <div className="w-full h-screen flex flex-col bg-white font-sans">
       {/* Header */}
-      <div className="bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-3 flex items-center gap-3">
+      <header className="bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-3 flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
           <Zap className="w-4 h-4 text-white" />
         </div>
@@ -110,12 +110,12 @@ export default function WidgetPage({ params }: { params: Promise<{ key: string }
         <button onClick={() => setMinimized(!minimized)} className="text-white/70 hover:text-white">
           <Minimize2 className="w-4 h-4" />
         </button>
-      </div>
+      </header>
 
       {/* Messages */}
       {!minimized && (
         <>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+          <main className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 {msg.role === "assistant" && (
@@ -141,10 +141,10 @@ export default function WidgetPage({ params }: { params: Promise<{ key: string }
               </div>
             ))}
             <div ref={bottomRef} />
-          </div>
+          </main>
 
           {/* Input */}
-          <div className="p-3 bg-white border-t border-gray-100">
+          <footer className="p-3 bg-white border-t border-gray-100">
             <div className="flex gap-2 items-center">
               <input
                 className="flex-1 text-sm border border-gray-200 rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-violet-500"
@@ -163,7 +163,7 @@ export default function WidgetPage({ params }: { params: Promise<{ key: string }
               </button>
             </div>
             <p className="text-center text-xs text-gray-400 mt-2">Powered by ARIA AI</p>
-          </div>
+          </footer>
         </>
       )}
     </div>
