@@ -21,14 +21,6 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || supabaseUrl === "undefined" || !supabaseKey || supabaseKey === "undefined") {
-      setError("Lỗi cấu hình: Biến môi trường Supabase chưa được thiết lập trong Vercel. Vui lòng liên hệ quản trị viên.");
-      setLoading(false);
-      return;
-    }
-
     try {
       const supabase = createClient();
 
