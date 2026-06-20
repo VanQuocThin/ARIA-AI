@@ -24,26 +24,31 @@ export default function RegisterPage() {
     try {
       const supabase = createClient();
 
-      const signUpPromise = supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
-          data: { full_name: form.name, property_name: form.propertyName, property_type: form.propertyType },
+          data: { full_name: form.name },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Kết nối Supabase hết thời gian (15s). Kiểm tra env vars trong Vercel.")), 15000)
-      );
-
-      const { error } = await Promise.race([signUpPromise, timeoutPromise]);
-
       if (error) {
-        setError(`Lỗi: ${error.message} (${error.status ?? "unknown"})`);
-      } else {
-        setDone(true);
+        setError(`Lỗi đăng ký: ${error.message}`);
+        return;
       }
+
+      // Tạo property thủ công sau khi signup (không dùng trigger)
+      if (data.user) {
+        await supabase.from("properties").insert({
+          user_id: data.user.id,
+          name: form.propertyName || "Cơ sở của tôi",
+          type: form.propertyType || "hotel",
+          plan: "free",
+        });
+      }
+
+      setDone(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(`Không thể kết nối: ${msg}`);
